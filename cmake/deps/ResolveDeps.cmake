@@ -6,10 +6,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/glfw.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/sdl3.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/glad2.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/imgui_docking.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/spdlog.cmake)
 
 # Prefer Conan (find_package) first; otherwise FetchContent fallback
 fx_find_or_fetch_glm()
 fx_find_or_fetch_entt()
+fx_find_or_fetch_spdlog()
 if(CORE_BACKEND STREQUAL "GLFW")
   fx_find_or_fetch_glfw()
 elseif(CORE_BACKEND STREQUAL "SDL3")

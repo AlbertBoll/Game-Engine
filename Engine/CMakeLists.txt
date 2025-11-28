@@ -22,6 +22,7 @@ target_link_libraries(Engine PRIVATE
   EnTT::EnTT
   glad::glad
   imgui::imgui
+  spdlog::spdlog
   $<$<STREQUAL:${CORE_BACKEND},GLFW>:glfw>
   $<$<STREQUAL:${CORE_BACKEND},SDL3>:SDL3::SDL3>
   $<$<BOOL:${OpenGL_FOUND}>:OpenGL::GL>

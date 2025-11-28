@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Core/Utility.h"
 #include "Windows/Window.h"
+#include "Core/BuildAndPlatformDetection.h"
 
 
 int main()
@@ -10,8 +11,10 @@ int main()
     WindowFlags b = WindowFlags::BORDERLESS;
     
     auto c = a | b;
-    std::cout<<"Hello world3"<<std::endl;
     std::cout<< static_cast<int>(c) <<std::endl;
+    #ifdef BUILD_RELEASE
+        std::cout<<"Hello World"<<std::endl;
+    #endif
     return 0;
     
 }
