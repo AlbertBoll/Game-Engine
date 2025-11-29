@@ -29,6 +29,9 @@ function(fx_find_or_fetch_spdlog)
     message(STATUS "spdlog: found (package)")
   elseif (ENABLE_FETCH_FALLBACK)
     message(STATUS "spdlog: not found, fetching v${SPDLOG_VERSION}")
+
+    set(SPDLOG_HEADER_ONLY ON CACHE BOOL "" FORCE)
+
     # FetchContent
     FetchContent_Declare(spdlog
       GIT_REPOSITORY https://github.com/gabime/spdlog.git

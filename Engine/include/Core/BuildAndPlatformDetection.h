@@ -4,7 +4,7 @@
 #if defined(NDEBUG)
   #define BUILD_RELEASE
 #else
-  #define BUILD_DEBUG  
+  #define BUILD_DEBUG
 #endif
 
 // Platform
@@ -34,7 +34,7 @@
 	#define PLATFORM_ANDROID
 	#error "Android is not supported!"
 #elif defined(__linux__)
-  #define PLATFORM_LINUX 
+  #define PLATFORM_LINUX
 #else
   #define PLATFORM_WINDOWS 0
   #define PLATFORM_LINUX   0

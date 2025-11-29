@@ -15,34 +15,34 @@
 									NONMOVABLE(className)
 
 template<typename T, typename deleter = std::default_delete<T>>
-using ScopedPtr = std::unique_ptr<T, deleter>;
+using Scoped = std::unique_ptr<T, deleter>;
 
 //using default deleter
 template<typename T, typename ... Args>
-constexpr ScopedPtr<T> CreateScopedPtr(Args&& ... args)
+constexpr Scoped<T> CreateScopedPtr(Args&& ... args)
 {
     return std::make_unique<T>(std::forward<Args>(args)...);
 }
 
 //using custom deleter
 template<typename T, typename deleter, typename ... Args>
-constexpr ScopedPtr<T, deleter> CreateScopedPtr(Args&& ... args)
+constexpr Scoped<T, deleter> CreateScopedPtr(Args&& ... args)
 {
     return std::unique_ptr<T, deleter>(new T{ std::forward<Args>(args)... });
 }
 
 
 template<typename T>
-using RefPtr = std::shared_ptr<T>;
+using Ref = std::shared_ptr<T>;
 
 template<typename T, typename... Args>
-constexpr RefPtr<T> CreateRefPtr(Args&& ... args)
+constexpr Ref<T> CreateRefPtr(Args&& ... args)
 {
     return std::make_shared<T>(std::forward<Args>(args)...);
 }
 
 template<typename T, typename deleter, typename... Args>
-constexpr RefPtr<T> CreateRefPtr(Args&& ... args)
+constexpr Ref<T> CreateRefPtr(Args&& ... args)
 {
     return std::shared_ptr<T>(new T{ std::forward<Args>(args)... }, deleter{});
 }                                    

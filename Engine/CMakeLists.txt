@@ -18,14 +18,17 @@ add_subdirectory(src/Windows)
 
 # Keep the backend hidden: PRIVATE link deps
 target_link_libraries(Engine PRIVATE
-  glm::glm
   EnTT::EnTT
   glad::glad
   imgui::imgui
-  spdlog::spdlog
   $<$<STREQUAL:${CORE_BACKEND},GLFW>:glfw>
   $<$<STREQUAL:${CORE_BACKEND},SDL3>:SDL3::SDL3>
   $<$<BOOL:${OpenGL_FOUND}>:OpenGL::GL>
+)
+
+target_link_libraries(Engine PUBLIC
+  glm::glm
+  spdlog::spdlog_header_only
 )
 
 # Platform GL fallbacks
@@ -40,6 +43,6 @@ target_compile_definitions(Engine PRIVATE
   $<$<STREQUAL:${CORE_BACKEND},GLFW>:USE_GLFW>
   $<$<STREQUAL:${CORE_BACKEND},SDL3>:USE_SDL3>
 )
-
+target_compile_definitions(Engine PUBLIC GLM_ENABLE_EXPERIMENTAL)
 # Optional: nice IDE folder
 set_target_properties(Engine PROPERTIES FOLDER "Engine")
