@@ -1,2 +1,5 @@
-target_sources(Engine PRIVATE Core.cpp)
-target_sources(Engine PRIVATE Log.cpp)
+target_sources(${TARGET_ENGINE} PRIVATE Log.cpp)
+# target_sources(${TARGET_ENGINE} PRIVATE KeyCodes.cpp)
+target_sources(${TARGET_ENGINE} PRIVATE Application.cpp)
+target_sources(${TARGET_ENGINE} PRIVATE Layer.cpp)
+target_sources(${TARGET_ENGINE} PRIVATE LayerStack.cpp)

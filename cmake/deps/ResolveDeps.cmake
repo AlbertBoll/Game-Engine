@@ -12,16 +12,22 @@ include(${CMAKE_CURRENT_LIST_DIR}/spdlog.cmake)
 fx_find_or_fetch_glm()
 fx_find_or_fetch_entt()
 fx_find_or_fetch_spdlog()
-if(CORE_BACKEND STREQUAL "GLFW")
+if(CORE_WINDOW_BACKEND STREQUAL "GLFW")
   fx_find_or_fetch_glfw()
-elseif(CORE_BACKEND STREQUAL "SDL3")
+elseif(CORE_WINDOW_BACKEND STREQUAL "SDL3")
   fx_find_or_fetch_sdl3()
+else()
+  message(FATAL_ERROR "Unknown CORE_WINDOW_BACKEND='${CORE_WINDOW_BACKEND}' (SDL3|GLFW)")
 endif()
 fx_find_or_fetch_glad2()
-fx_find_or_fetch_imgui_docking()
 
-# System OpenGL
+if(ENABLE_IMGUI)
+  fx_find_or_fetch_imgui_docking()
+endif()
+# System SDK provides OpenGL
 find_package(OpenGL QUIET)
+
+
 # cmake/deps/glm.cmake
 # cmake
 # Copy code

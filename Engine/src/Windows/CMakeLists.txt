@@ -1,1 +1,1 @@
-target_sources(Engine PRIVATE Window.cpp)
+target_sources(${TARGET_ENGINE} PRIVATE Window.cpp)

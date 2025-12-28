@@ -27,10 +27,10 @@ function(fx_find_or_fetch_imgui_docking)
     ${imgui_SOURCE_DIR}
     ${imgui_SOURCE_DIR}/backends
   )
-  if(CORE_BACKEND STREQUAL "SDL3")
+  if(CORE_WINDOW_BACKEND STREQUAL "SDL3")
     target_sources(imgui PRIVATE ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp)
     target_link_libraries(imgui PRIVATE SDL3::SDL3) 
-  else()
+elseif(CORE_WINDOW_BACKEND STREQUAL "GLFW")
     target_sources(imgui PRIVATE ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
     target_link_libraries(imgui PRIVATE glfw)
   endif()
