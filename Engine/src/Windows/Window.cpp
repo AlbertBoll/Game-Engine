@@ -12,5 +12,4 @@ Scoped<Window> Window::Create(const WindowProperties& winProp)
         window->Initialize(winProp);
         return window;
     #endif
-
 }

@@ -1,7 +1,8 @@
 #pragma once
 #include "Core/Utility.h"
+#include "Events/Event.h"
 
-enum class WindowFlags: uint8_t
+enum class WindowFlags: uint32_t
 {
     INVISIBLE = 0x1,
     FULLSCREEN = 0X2,
@@ -47,8 +48,9 @@ struct WindowProperties
 
 class Window
 {
+    
 public:
-    //using EventCallbackFn = std::function<void(Event&)>;
+    using EventCallbackFn = std::function<void(Event&)>;
     Window() = default;
     virtual ~Window(){};
     uint32_t GetScreenWidth()const { return m_WindowProperties.m_Width; }
@@ -57,14 +59,23 @@ public:
    
     WindowProperties& GetWindowProperties(){ return m_WindowProperties; }
     // Window attributes
-
+	virtual void SetEventCallback(const EventCallbackFn& callback) { m_EventCallback = callback; }
     virtual void* GetNativeWindow() const = 0;
     virtual void ShutDown() = 0;
+    virtual void OnUpdate() = 0;
     static Scoped<Window> Create(const WindowProperties& winProp = {});
     bool IsVSync()const {return m_WindowProperties.m_IsVsync;}
+    virtual void SwapBuffers() = 0;
+    void PollEvents(){ PumpEvents(); }
+
+protected:
+    virtual void PumpEvents() = 0;
+
+
 
 protected:
     WindowProperties m_WindowProperties{};
+    EventCallbackFn m_EventCallback;
     //uint32_t m_ScreenWidth, m_ScreenHeight;
     //float m_AspectRatio = 16.f / 9.f;
 };
