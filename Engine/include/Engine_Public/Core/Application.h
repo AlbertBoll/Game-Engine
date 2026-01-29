@@ -3,14 +3,12 @@
 #include"Export.hpp"
 #include"Base.h"
 #include"Utility.h"
-// #include"Events/Event.h"
-// #include"Events/WindowEvent.h"
 #include"LayerStack.h"
 #include<mutex>
 
 
 
-//int main(int argc, char** argv);
+int main(int argc, char** argv);
 class Window;
 class WindowProperties;
 class Event;
@@ -76,11 +74,12 @@ private:
 
 private:
     inline static Application* s_Instance{};
+    friend int ::main(int argc, char** argv);
 
 
 };
 
 // To be defined in CLIENT
-Application* CreateApplication(ApplicationCommandLineArgs args);
+Application* CreateApplication(const WindowProperties& args);
 
 
