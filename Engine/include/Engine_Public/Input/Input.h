@@ -15,9 +15,11 @@ public:
     static bool IsKeyDown(Key k);
     static bool WasKeyPressed(Key k);
     static bool WasKeyReleased(Key k);
+    static bool IsKeyHeld(Key k);
 
     static bool IsMouseDown(MouseButton b);
     static bool WasMousePressed(MouseButton b);
+    static bool IsMouseHeld(MouseButton b);
 
     static float MouseX();
     static float MouseY();

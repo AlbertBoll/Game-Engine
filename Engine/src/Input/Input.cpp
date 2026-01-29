@@ -3,6 +3,8 @@
 #include"Windows/Window.h"
 
 
+
+
 void Input::Init(Window& window) {
     InputBackend_Init(window);
 }
@@ -36,11 +38,21 @@ void Input::BeginFrame()
 bool Input::IsKeyDown(Key k)      { return s_CurKeys[(size_t)k]; }
 bool Input::WasKeyPressed(Key k)  { return s_CurKeys[(size_t)k] && !s_PrevKeys[(size_t)k]; }
 bool Input::WasKeyReleased(Key k) { return !s_CurKeys[(size_t)k] && s_PrevKeys[(size_t)k]; }
+bool Input::IsKeyHeld(Key k)
+{
+    return s_CurKeys[(size_t)k] && s_PrevKeys[(size_t)k];
+}
 
 bool Input::IsMouseDown(MouseButton b)     { return s_CurMouse[(size_t)b]; }
 bool Input::WasMousePressed(MouseButton b) { return s_CurMouse[(size_t)b] && !s_PrevMouse[(size_t)b]; }
+bool Input::IsMouseHeld(MouseButton b)
+{
+    return s_CurMouse[(size_t)b] && s_PrevMouse[(size_t)b];
+}
 
 float Input::MouseX() { return s_MouseX; }
 float Input::MouseY() { return s_MouseY; }
 float Input::MouseDX(){ return s_MouseDX; }
-float Input::MouseDY(){ return s_MouseDY; }
+float Input::MouseDY() { return s_MouseDY; }
+
+    
