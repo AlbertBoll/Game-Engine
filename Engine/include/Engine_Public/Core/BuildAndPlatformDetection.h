@@ -9,7 +9,7 @@
 
 // Platform
 #if defined(_WIN32)                        // Win32 + Win64
-  #define PLATFORM_WINDOWS
+  #define PLATFORM_WINDOWS = 1
 #elif defined(__APPLE__)||defined(__MACH__) // macOS / iOS / tvOS
   #include <TargetConditionals.h>
   /* TARGET_OS_MAC exists on all the platforms
@@ -22,7 +22,7 @@
 		#define PLATFORM_IOS
 		#error "IOS is not supported!"
 	#elif TARGET_OS_MAC == 1
-		#define PLATFORM_MACOS
+		#define PLATFORM_MACOS = 1
 		#error "MacOS is not supported!"
 	#else
 		#error "Unknown Apple platform!"

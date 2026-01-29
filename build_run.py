@@ -67,10 +67,11 @@ def cmake_configure(build_dir: Path, target_engine: str, target_app: str, genera
         args += [f"-DCMAKE_TOOLCHAIN_FILE={toolchain}"]
     run(args)
 
-def cmake_build(build_dir: Path, target = None, jobs: int | None = None):
+def cmake_build(build_dir: Path, targets = None, jobs: int | None = None):
     args = ["cmake", "--build", str(build_dir)]
-    if target:
-        args += ["--target", target]
+    if targets:
+        for target in targets:
+            args += ["--target", target]
     if jobs:
         args += ["--parallel", str(jobs)]
     run(args)
@@ -106,7 +107,8 @@ def main():
     ap.add_argument("--fallback", choices=["on","off"], default="on", help="Enable FetchContent fallback if Conan pkgs missing.")
     ap.add_argument("--jobs", "-j", type=int, default=None, help="Parallel build jobs.")
     ap.add_argument("--clean", action="store_true", help="Delete the build dir(s) before building.")
-    ap.add_argument("--target", default=None, help="target build.")
+    # ap.add_argument("--target", default=None, help="target build.")
+    ap.add_argument("--target", nargs="+", default=[], help="multiple targets build.")
     ap.add_argument("--enable_imgui", choices=["on", "off"], default="on", help="Enable IMGUI UI or not")
     ap.add_argument("--build_shared_libs", choices=["on", "off"], default="on", help="Build Shared lib or static lib")
     ap.add_argument("--target_engine", default=None, help="name the target engine")

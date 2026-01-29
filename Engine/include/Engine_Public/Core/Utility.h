@@ -90,16 +90,38 @@ inline std::variant<std::false_type, std::true_type> bool_variant(bool condition
 template<class E> struct enable_bitmask : std::false_type {};
 template<class E> constexpr bool enable_bitmask_v = enable_bitmask<E>::value;
 
-template<class E> 
-requires std::is_enum_v<E> && enable_bitmask_v<E>
+template<class E>
+concept bitmask_enum = std::is_enum_v<E> && enable_bitmask_v<E>;
+
+
+template<bitmask_enum E> 
+//requires std::is_enum_v<E> && enable_bitmask_v<E>
 constexpr E operator|(E a, E b) {
   using U = std::underlying_type_t<E>;
   return static_cast<E>(static_cast<U>(a) | static_cast<U>(b));
 }
 
-template<class E>
-requires std::is_enum_v<E> && enable_bitmask_v<E>
+template<bitmask_enum E>
+//requires std::is_enum_v<E> && enable_bitmask_v<E>
 constexpr E operator&(E a, E b) {
   using U = std::underlying_type_t<E>;
   return static_cast<E>(static_cast<U>(a) & static_cast<U>(b));
+}
+
+template<bitmask_enum E>
+//requires std::is_enum_v<E> && enable_bitmask_v<E>
+constexpr E& operator|=(E& a, E b) noexcept {
+    return a = (a | b);
+}
+
+template<bitmask_enum E>
+//requires std::is_enum_v<E> && enable_bitmask_v<E>
+constexpr E& operator&=(E& a, E b) noexcept {
+    return a = (a & b);
+}
+
+template<bitmask_enum E>
+constexpr bool has_flag(E value, E flag) noexcept {
+    using U = std::underlying_type_t<E>;
+    return (static_cast<U>(value) & static_cast<U>(flag)) != 0;
 }
