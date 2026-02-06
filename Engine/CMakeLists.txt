@@ -16,6 +16,8 @@ add_library(${TARGET_ENGINE})
 add_subdirectory(src/Core)
 add_subdirectory(src/Windows)
 add_subdirectory(src/Input)
+add_subdirectory(src/Renderer)
+add_subdirectory(src/Primitives)
 
 
 if(CORE_WINDOW_BACKEND STREQUAL "SDL3")
