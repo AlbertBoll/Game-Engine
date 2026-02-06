@@ -5,6 +5,8 @@
 // #include "Events/Event.h"
 // #include "Input/Codes.h"
 //#include "Core/Application.h"
+#include "Renderer/CommandQueue.h"
+#include "Primitives/PrimitiveTraits.h"
 #include "Core/EntryPoint.h"
 
 
@@ -14,7 +16,7 @@ public:
     SimulationApp(const WindowProperties& prop)
         : Application(prop)
     {
-
+      
     }
     ~SimulationApp() override = default;
 };
