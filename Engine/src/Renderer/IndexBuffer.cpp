@@ -30,6 +30,7 @@ IndexBuffer::~IndexBuffer()
 }
 
 IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept
+    : IndexBuffer()
 {
     *this = std::move(other);
 }

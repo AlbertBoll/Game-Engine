@@ -12,6 +12,7 @@ enum class IndexType : uint8_t
 class IndexBuffer
 {
 public:
+    IndexBuffer() = default;
     IndexBuffer(std::size_t indexCount,
                 IndexType type = IndexType::U32,
                 BufferUsage usage = BufferUsage::StaticDraw,

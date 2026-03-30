@@ -8,6 +8,7 @@
 class VertexBuffer
 {
 public:
+    VertexBuffer() = default;
     VertexBuffer(std::size_t sizeBytes,
                  BufferUsage usage = BufferUsage::StaticDraw,
                  const void* initialData = nullptr);

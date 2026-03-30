@@ -4,6 +4,26 @@
 #include"Renderer/IndexBuffer.h"
 
 
+VertexArray::VertexArray(VertexArray&& other) noexcept
+    :VertexArray()
+{
+    *this = std::move(other);
+}
+
+VertexArray& VertexArray::operator=(VertexArray&& other)noexcept
+{
+    if (this != &other)
+    {
+        if (m_RendererID)
+            glDeleteVertexArrays(1, &m_RendererID);
+
+        m_RendererID = std::exchange(other.m_RendererID, 0);
+        m_NextAttrib = std::exchange(other.m_NextAttrib, 0);
+    }
+    return *this;
+}
+
+
 static constexpr GLenum ToGLBaseType(ShaderDataType t)
 {
     switch (t)

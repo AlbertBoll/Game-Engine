@@ -19,6 +19,7 @@ VertexBuffer::~VertexBuffer()
 }
 
 VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
+    :VertexBuffer()
 {
     *this = std::move(other);
 }
