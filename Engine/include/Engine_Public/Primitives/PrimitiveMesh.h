@@ -2,15 +2,9 @@
 #include "Renderer/IndexBuffer.h"
 #include "Renderer/VertexBuffer.h"
 #include "Renderer/VertexArray.h"
+#include "Math/Math.h"
 
-
-struct PrimVertex
-{
-    float px,py,pz;      // position
-    float u,v;           // texture coordinate
-    float nx,ny,nz;      // normal   
-    float tx,ty,tz,tw;   // tangent
-};
+using namespace Math;
 
 
 struct MeshGL
@@ -21,6 +15,8 @@ struct MeshGL
     uint32_t m_IndexCount = 0;
 
     MOVE_DEFAULT_ONLY(MeshGL)
+
+    MeshGL() = default;
 
     MeshGL(std::vector<PrimVertex>&& verts, std::vector<uint32_t>&& inds)
         : m_VertexBuffer(verts.size() * sizeof(PrimVertex), 

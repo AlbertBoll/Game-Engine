@@ -13,7 +13,7 @@ struct PrimitiveTraits<CubeKey>
 
     static uint64_t Hash(const CubeKey& k)
     {
-        uint64_t tag = 0xC0B3u;
+        uint64_t tag = 0x43554245ull;
         return HashFields(tag, 
             HashAny(k.m_HardNormals)
         );
@@ -170,5 +170,22 @@ struct PrimitiveTraits<AnnulusKey>
     static MeshGL Build(const AnnulusKey& k)
     {
         return PrimitiveGen::CreateAnnulus2D(k.m_Seg);
+    }
+};
+
+template<>
+struct PrimitiveTraits<TriangleKey>
+{
+    static void Validate(const TriangleKey&){}
+
+    static uint64_t Hash(const TriangleKey&)
+    {
+        uint64_t tag = 0x54524933ull; // "TRI3"
+        return HashFields(tag);
+    }
+
+    static MeshGL Build(const TriangleKey&)
+    {
+        return PrimitiveGen::CreateTriangle();
     }
 };

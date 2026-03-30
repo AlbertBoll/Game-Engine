@@ -41,3 +41,8 @@ struct PlaneKey
     uint16_t m_SegX = 1; 
     uint16_t m_SegY = 1; 
 };
+
+struct TriangleKey
+{
+   
+};

@@ -1,6 +1,7 @@
 #include "Primitives/PrimitiveGen.h"
 #include<glm/gtc/constants.hpp>
 
+
 static constexpr float PI = glm::pi<float>();
 static constexpr float TWO_PI = glm::two_pi<float>();
 
@@ -474,6 +475,20 @@ MeshGL PrimitiveGen::CreateTorus(uint32_t radialSegments, uint32_t tubeSegments,
     return MeshGL(std::move(verts), std::move(inds));
 }
 
+
+MeshGL PrimitiveGen::CreateTriangle()
+{
+    std::vector<PrimVertex> verts = {
+        // position              uv        normal         tangent
+        { -0.5f, -0.5f, 0.0f,   0.0f,0.0f,  0.0f,0.0f,1.0f,  1.0f,0.0f,0.0f,1.0f },
+        {  0.5f, -0.5f, 0.0f,   1.0f,0.0f,  0.0f,0.0f,1.0f,  1.0f,0.0f,0.0f,1.0f },
+        {  0.0f,  0.5f, 0.0f,   0.5f,1.0f,  0.0f,0.0f,1.0f,  1.0f,0.0f,0.0f,1.0f }
+    };
+
+    std::vector<uint32_t> inds = { 0, 1, 2 };
+
+    return MeshGL(std::move(verts), std::move(inds));
+}
 
 MeshGL PrimitiveGen::CreateAnnulus2D(uint32_t radialSegments)
 {
