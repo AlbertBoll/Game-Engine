@@ -7,6 +7,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/sdl3.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/glad2.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/imgui_docking.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/spdlog.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/stb.cmake)
 
 # Prefer Conan (find_package) first; otherwise FetchContent fallback
 fx_find_or_fetch_glm()
@@ -26,6 +27,8 @@ if(ENABLE_IMGUI)
 endif()
 # System SDK provides OpenGL
 find_package(OpenGL QUIET)
+
+fx_find_or_fetch_stb_image()
 
 
 # cmake/deps/glm.cmake

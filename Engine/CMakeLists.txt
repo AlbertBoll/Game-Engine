@@ -18,6 +18,12 @@ add_subdirectory(src/Windows)
 add_subdirectory(src/Input)
 add_subdirectory(src/Renderer)
 add_subdirectory(src/Primitives)
+# add_subdirectory(src/Assets)
+add_subdirectory(src/Assets/Shader)
+add_subdirectory(src/Assets/Textures)
+add_subdirectory(src/Assets/Mesh)
+add_subdirectory(src/Assets/Material)
+
 
 
 if(CORE_WINDOW_BACKEND STREQUAL "SDL3")
@@ -35,6 +41,12 @@ target_include_directories(${TARGET_ENGINE}
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Engine_Private 
 )
+
+# expose std::image to public headers 
+target_link_libraries(${TARGET_ENGINE} PUBLIC 
+  stb::image
+)
+# target_compile_definitions(Engine PRIVATE ENGINE_ENABLE_STB_IMAGE=1)
 
 
 # expose glm to public headers, propagate its include dirs
