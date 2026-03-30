@@ -8,6 +8,14 @@
 #include "Renderer/CommandQueue.h"
 #include "Primitives/PrimitiveTraits.h"
 #include "Core/EntryPoint.h"
+#include "Math/Math.h"
+#include "Assets/Mesh/MeshManager.h"
+#include "Assets/Shader/ShaderManager.h"
+#include "Assets/Material/MaterialManager.h"
+#include "Assets/Material/MaterialPresets.h"
+#include "Renderer/Renderer.h"
+#include "Renderer/RenderTarget.h"
+#include "Renderer/FramebufferManager.h"
 
 
 class SimulationApp: public Application
@@ -16,7 +24,8 @@ public:
     SimulationApp(const WindowProperties& prop)
         : Application(prop)
     {
-      
+        //INFO("size of glm::vec3: {}", sizeof(Math::Vec3f));
+        ShaderManager sh;
     }
     ~SimulationApp() override = default;
 };
