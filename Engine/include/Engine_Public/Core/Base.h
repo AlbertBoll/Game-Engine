@@ -37,11 +37,21 @@
 	TypeName(const TypeName&) = delete;      \
 	TypeName& operator=(const TypeName&) = delete;
 
+#define DELETE_COPY(TypeName)\
+	TypeName(const TypeName&) = delete;      \
+	TypeName& operator=(const TypeName&) = delete; 
+
 static inline const void* OffsetPtr(std::size_t offsetBytes)
 {
 	return reinterpret_cast<const void*>(static_cast<std::uintptr_t>(offsetBytes));
 }
 
+using u8  = uint8_t;
+using u32 = uint32_t;
+using u64 = uint64_t;
+using i32 = int32_t;
+
 #include "Assert.h"
 #include "Log.h"
+#include <filesystem>
 //#include "Export.hpp"
