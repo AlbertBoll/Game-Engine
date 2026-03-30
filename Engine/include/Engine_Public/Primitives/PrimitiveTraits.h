@@ -189,3 +189,24 @@ struct PrimitiveTraits<TriangleKey>
         return PrimitiveGen::CreateTriangle();
     }
 };
+
+template<>
+struct PrimitiveTraits<PlaneKey>
+{
+    static void Validate(const PlaneKey& k)
+    {
+        CORE_ASSERT(k.m_SegX >= 1);
+        CORE_ASSERT(k.m_SegY >= 1);
+    }
+
+    static uint64_t Hash(const PlaneKey& k)
+    {
+        uint64_t tag = 0x504C414Eull; // "PLAN"
+        return HashFields(tag, HashAny(k.m_SegX), HashAny(k.m_SegY));
+    }
+
+    static MeshGL Build(const PlaneKey& k)
+    {
+        return PrimitiveGen::CreatePlane(k.m_SegX, k.m_SegY);
+    }
+};
