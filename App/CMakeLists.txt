@@ -1,4 +1,6 @@
-add_executable(${TARGET_APP} main.cpp)
+# target_sources(${TARGET_APP} PRIVATE DemoTriangleLayer.cpp)
+
+add_executable(${TARGET_APP} main.cpp DemoTriangleLayer.cpp)
 target_link_libraries(${TARGET_APP} PRIVATE ${PROJECT_NAME}::Engine)
 set_target_properties(${TARGET_APP} PROPERTIES FOLDER "${TARGET_APP}")
 
@@ -17,6 +19,14 @@ set_target_properties(${TARGET_APP} PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY         "${CMAKE_BINARY_DIR}/bin"
   RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/bin"
   RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin"
+)
+
+add_custom_command(TARGET ${TARGET_APP} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          "$<TARGET_FILE_DIR:${TARGET_APP}>/Assets/Shader/ShaderSource"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+          "${CMAKE_SOURCE_DIR}/Engine/include/Engine_Public/Assets/Shader/ShaderSource"
+          "$<TARGET_FILE_DIR:${TARGET_APP}>/Assets/Shader/ShaderSource"
 )
 
 # Let the exe find libEngine.so/.dylib from the build tree

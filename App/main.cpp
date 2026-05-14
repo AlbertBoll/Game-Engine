@@ -1,21 +1,5 @@
-// #include "Core/Utility.h"
-// #include "Windows/Window.h"
-// #include "Core/BuildAndPlatformDetection.h"
-// #include "Core/Base.h"
-// #include "Events/Event.h"
-// #include "Input/Codes.h"
-//#include "Core/Application.h"
-#include "Renderer/CommandQueue.h"
-#include "Primitives/PrimitiveTraits.h"
 #include "Core/EntryPoint.h"
-#include "Math/Math.h"
-#include "Assets/Mesh/MeshManager.h"
-#include "Assets/Shader/ShaderManager.h"
-#include "Assets/Material/MaterialManager.h"
-#include "Assets/Material/MaterialPresets.h"
-#include "Renderer/Renderer.h"
-#include "Renderer/RenderTarget.h"
-#include "Renderer/FramebufferManager.h"
+#include "DemoTriangleLayer.h"
 
 
 class SimulationApp: public Application
@@ -24,8 +8,7 @@ public:
     SimulationApp(const WindowProperties& prop)
         : Application(prop)
     {
-        //INFO("size of glm::vec3: {}", sizeof(Math::Vec3f));
-        ShaderManager sh;
+       PushLayer(new DemoTriangleLayer());
     }
     ~SimulationApp() override = default;
 };
