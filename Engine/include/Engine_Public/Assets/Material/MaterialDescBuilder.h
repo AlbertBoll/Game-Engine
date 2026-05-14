@@ -14,7 +14,7 @@
 // - High-level texture helpers like AlbedoMap()/NormalMap() keep flags in sync.
 // - Raw Texture()/ClearTexture() do NOT automatically modify feature flags.
 //   They are lower-level APIs for callers who want explicit control.
-class MaterialDescBuilder
+class ENGINE_API MaterialDescBuilder
 {
 public:
     MaterialDescBuilder() = default;

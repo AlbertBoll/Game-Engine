@@ -2,7 +2,27 @@
 
 #include "Core/Base.h"
 
-enum class TextureType : u8 { Tex2D, Cube };
+enum class TextureType : u8 
+{   
+    Tex2D, 
+    Tex2DMS, 
+    Cube 
+};
+
+enum class TextureUsage : u8
+{
+    Sampled,
+    ColorAttachment,
+    DepthStencilAttachment
+};
+
+enum class TextureSampleCount : u8
+{
+    x1 = 1,
+    x2 = 2,
+    x4 = 4,
+    x8 = 8
+};
 
 enum class DefaultTextureKind : u8
 {
@@ -10,6 +30,12 @@ enum class DefaultTextureKind : u8
     FlatNormal, //Normal
     WhiteR,     //Metallic/Roughness/AO
     WhiteORM    //ORM
+};
+
+enum class FixedSampleLocations : u8
+{
+    Yes,
+    No
 };
 
 enum class TextureFormat : u8
@@ -59,7 +85,12 @@ enum class MagFilter : u8
     Linear
 };
 
-enum class Wrap : u8 { Repeat, ClampToEdge, MirroredRepeat };
+enum class Wrap : u8 
+{ 
+    Repeat, 
+    ClampToEdge, 
+    MirroredRepeat 
+};
 
 struct SamplerDesc
 {
@@ -77,14 +108,24 @@ struct SamplerDesc
 
 struct TextureDesc
 {
-    TextureType   m_Type   = TextureType::Tex2D;
-    TextureFormat m_Format = TextureFormat::RGBA8;
+    TextureType        m_Type    = TextureType::Tex2D;
+    TextureUsage       m_Usage   = TextureUsage::Sampled;
+    TextureFormat      m_Format  = TextureFormat::RGBA8;
+    TextureSampleCount m_Samples = TextureSampleCount::x1;
 
     u32 m_Width  = 1;
     u32 m_Height = 1;
 
-    u8   m_MipLevels = 0;    // 0 = auto full chain
-    bool b_GenerateMips = true; // 上传后是否生成 mip（CreateEmpty 不会空生成）
+    // Final allocated mip count:
+    // 1  -> only mip0
+    // > 1 -> exact mip chain length
+    // 0  -> invalid
+    u8  m_MipLevels = 1;    // 1 = only mip0
+
+    //bool b_GenerateMips = true; // determined whether generate mip
+
+    //u8 m_SampleCount = 1; // 1 = normal texture, >1 = MSAA
+    //FixedSampleLocations m_FixedSampleLocations = FixedSampleLocations::Yes;
 
     SamplerDesc m_Sampler{};
 
@@ -100,7 +141,7 @@ struct TextureHandle
     friend bool operator==(const TextureHandle& a, const TextureHandle& b) = default;
 };
 
-// -------- 强类型选项（替代 bool） --------
+// -------- strong type（replace bool） --------
 enum class ColorSpace : u8
 {
     Auto,        // LDR 3/4 channel -> sRGB；1/2 channel -> Linear

@@ -2,7 +2,7 @@
 
 #include "Core/Base.h"
 
-struct MeshHandle
+struct ENGINE_API MeshHandle
 {
     u32 m_Id = 0;          // slot index + 1
     u32 m_Generation = 0;  // avoid dangling deletion

@@ -18,7 +18,7 @@ enum class ClearMode: u8
     FREE_MEMORY
 };
 
-struct ShaderHandle
+struct ENGINE_API ShaderHandle
 {
     u32 m_Id = 0;          // slot index + 1
     u32 m_Generation = 0;  // prevent dangling

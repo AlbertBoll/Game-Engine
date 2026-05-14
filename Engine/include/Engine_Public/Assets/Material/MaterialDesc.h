@@ -66,7 +66,7 @@ struct MaterialParams
 };
 
 // -------------------- Material Handle --------------------
-struct MaterialHandle
+struct ENGINE_API MaterialHandle
 {
     u32 m_Id = 0;          // slot index + 1
     u32 m_Generation = 0;  // stale-handle protection

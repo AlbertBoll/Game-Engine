@@ -14,7 +14,7 @@
 
 #include "MeshDesc.h"
 
-class MeshManager
+class ENGINE_API MeshManager
 {
 public:
     MeshManager() = default;

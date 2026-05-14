@@ -10,6 +10,7 @@
 #include <span>
 #include <cstddef>
 
+class FramebufferManager;
 
 template<>
 struct CustomHash<SamplerDesc>
@@ -33,7 +34,7 @@ struct TextureKeyHash
     std::size_t operator()(const TextureKey& k) const noexcept;
 };
 
-class TextureManager
+class ENGINE_API TextureManager
 {
 public:
     TextureManager() = default;
@@ -94,9 +95,10 @@ public:
     TextureHandle LoadEmissiveMap(std::string_view file,
                                 const TextureLoadOptions& opt = {});
 
-    u32 GetNativeTexture(TextureHandle h) const;
 
 private:
+    friend class FramebufferManager;
+
     struct Slot
     {
         u32 m_GLTex     = 0; 
@@ -145,4 +147,7 @@ private:
 
     TextureHandle TryGetFromCache(const TextureKey& key);
     TextureHandle StoreToCache(const TextureKey& key, TextureHandle h);
+
+    // internal-only access for FramebufferManager
+    u32 GetNativeTexture(TextureHandle h) const;
 };
