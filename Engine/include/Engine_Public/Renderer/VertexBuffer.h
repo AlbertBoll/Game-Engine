@@ -5,7 +5,7 @@
 #include <cstdint>
 
 
-class VertexBuffer
+class ENGINE_API VertexBuffer
 {
 public:
     VertexBuffer() = default;

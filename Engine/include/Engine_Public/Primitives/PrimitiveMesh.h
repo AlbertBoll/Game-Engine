@@ -7,7 +7,7 @@
 using namespace Math;
 
 
-struct MeshGL
+struct ENGINE_API MeshGL
 {
     VertexArray m_VertexArray;
     VertexBuffer m_VertexBuffer;

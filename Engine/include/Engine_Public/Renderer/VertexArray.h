@@ -7,7 +7,7 @@ using Handle = std::uint32_t;
 class VertexBuffer;
 class IndexBuffer;
 
-class VertexArray
+class ENGINE_API VertexArray
 {
 public:
     VertexArray();

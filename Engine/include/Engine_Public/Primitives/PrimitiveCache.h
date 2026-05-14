@@ -6,7 +6,7 @@
 using MeshId = uint32_t;
 
 template<class Key>
-struct PrimitiveTraits;
+struct ENGINE_API PrimitiveTraits;
 
 template<class Key>
 concept PrimitiveKey = requires(const Key& k)
@@ -16,7 +16,7 @@ concept PrimitiveKey = requires(const Key& k)
     { PrimitiveTraits<Key>::Validate(k) }; // return void
 };
 
-class PrimitiveFactory
+class ENGINE_API PrimitiveFactory
 {
 public:
     PrimitiveFactory() = default;

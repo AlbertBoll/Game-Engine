@@ -7,7 +7,7 @@
 #include "PrimitiveUtils.h"
 
 template<>
-struct PrimitiveTraits<CubeKey>
+struct ENGINE_API PrimitiveTraits<CubeKey>
 {
     static void Validate(const CubeKey&) { }
 
@@ -30,7 +30,7 @@ struct PrimitiveTraits<CubeKey>
 };
 
 template<>
-struct PrimitiveTraits<SphereKey>
+struct ENGINE_API PrimitiveTraits<SphereKey>
 {
     static void Validate(const SphereKey& k)
     {
@@ -58,7 +58,7 @@ struct PrimitiveTraits<SphereKey>
 };
  
 template<>
-struct PrimitiveTraits<CylinderKey>
+struct ENGINE_API PrimitiveTraits<CylinderKey>
 {
     static void Validate(const CylinderKey& k)
     {
@@ -88,7 +88,7 @@ struct PrimitiveTraits<CylinderKey>
 };
 
 template<>
-struct PrimitiveTraits<ConeKey>
+struct ENGINE_API PrimitiveTraits<ConeKey>
 {
     static void Validate(const ConeKey& k)
     {
@@ -116,7 +116,7 @@ struct PrimitiveTraits<ConeKey>
 };
 
 template<>
-struct PrimitiveTraits<TorusKey>
+struct ENGINE_API PrimitiveTraits<TorusKey>
 {
     static void Validate(const TorusKey& k)
     {
@@ -149,7 +149,7 @@ struct PrimitiveTraits<TorusKey>
 };
 
 template<>
-struct PrimitiveTraits<AnnulusKey>
+struct ENGINE_API PrimitiveTraits<AnnulusKey>
 {
     static void Validate(const AnnulusKey& k)
     {
@@ -174,7 +174,7 @@ struct PrimitiveTraits<AnnulusKey>
 };
 
 template<>
-struct PrimitiveTraits<TriangleKey>
+struct ENGINE_API PrimitiveTraits<TriangleKey>
 {
     static void Validate(const TriangleKey&){}
 
@@ -191,7 +191,7 @@ struct PrimitiveTraits<TriangleKey>
 };
 
 template<>
-struct PrimitiveTraits<PlaneKey>
+struct ENGINE_API PrimitiveTraits<PlaneKey>
 {
     static void Validate(const PlaneKey& k)
     {

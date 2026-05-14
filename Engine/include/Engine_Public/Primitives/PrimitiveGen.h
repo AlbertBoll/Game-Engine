@@ -8,7 +8,7 @@
 #include <algorithm>
 
 
-class PrimitiveGen
+class ENGINE_API PrimitiveGen
 {
 public:
     static MeshGL CreateCube(bool hardNormals = true);

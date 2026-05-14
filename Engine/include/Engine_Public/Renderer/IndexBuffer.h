@@ -9,7 +9,7 @@ enum class IndexType : uint8_t
     U32
 };
 
-class IndexBuffer
+class ENGINE_API IndexBuffer
 {
 public:
     IndexBuffer() = default;

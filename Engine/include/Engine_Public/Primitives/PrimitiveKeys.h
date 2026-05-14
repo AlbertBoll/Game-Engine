@@ -1,48 +1,48 @@
 #pragma once
 
-struct CubeKey
+struct ENGINE_API CubeKey
 {
     bool m_HardNormals = true;
 };
 
-struct SphereKey
+struct ENGINE_API SphereKey
 {
     uint16_t m_Seg = 64;
     uint16_t m_Ring = 32;
 };
 
-struct CylinderKey
+struct ENGINE_API CylinderKey
 {
     uint16_t m_Seg  = 48; 
     uint16_t m_HSeg = 1;  
     bool m_Capped   = true;
 };
 
-struct ConeKey
+struct ENGINE_API ConeKey
 {
     uint16_t m_Seg  = 48; 
     bool m_Capped   = true;
 };
 
-struct TorusKey
+struct ENGINE_API TorusKey
 {
     uint16_t m_Seg  = 64; 
     uint16_t m_Tube = 24; 
     uint16_t m_RatioQ = 250; // 0.250
 };
 
-struct AnnulusKey
+struct ENGINE_API AnnulusKey
 {
     uint16_t m_Seg = 64; 
 };
 
-struct PlaneKey
+struct ENGINE_API PlaneKey
 {
     uint16_t m_SegX = 1; 
     uint16_t m_SegY = 1; 
 };
 
-struct TriangleKey
+struct ENGINE_API TriangleKey
 {
    
 };
