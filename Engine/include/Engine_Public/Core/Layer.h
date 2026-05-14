@@ -12,6 +12,7 @@ public:
 
     virtual void OnAttach() {}
     virtual void OnDetach() {}
+    virtual void OnRender() {}
     virtual void OnUpdate(Timestep ts) {}
     virtual void OnEvent(Event& event) {}
     bool GetPendingDestroy() const {return b_PendingDestroy;}

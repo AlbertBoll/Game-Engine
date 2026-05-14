@@ -137,7 +137,7 @@ void SDL3Window::OnUpdate()
     PumpEvents();
      // Minimal redraw so OS/compositor sees updates
     //glViewport(0, 0, m_WindowProperties.m_Width, m_WindowProperties.m_Height);
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     //SDL_GL_SwapWindow(m_Window);
 }
 

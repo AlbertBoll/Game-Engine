@@ -164,10 +164,14 @@ void Application::Run()
         Input::BeginFrame();
 
         ExecuteMainThreadQueue();
-
-     
+        
+        // 1) update scene /logic
         for (Layer* layer : m_LayerStack)
-            layer->OnUpdate(Timestep(dt));
+            layer->OnUpdate(dt);
+
+        // 2) render each layer
+         for (Layer* layer : m_LayerStack)
+            layer->OnRender();
 
         m_Window->SwapBuffers(); // present after rendering
 
