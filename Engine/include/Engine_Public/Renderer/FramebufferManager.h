@@ -5,9 +5,10 @@
 
 class TextureManager;
 
-class FramebufferManager
+class ENGINE_API FramebufferManager
 {
 public:
+    //FramebufferManager() = default;
     explicit FramebufferManager(TextureManager& textureMgr);
     ~FramebufferManager();
 

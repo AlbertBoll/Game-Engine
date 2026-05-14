@@ -93,7 +93,7 @@ inline PipelineKey BuildPipelineKey(const PipelineState& p)
     return k;
 }
 
-struct RenderPassDesc
+struct ENGINE_API RenderPassDesc
 {
     RenderPass   m_Pass = RenderPass::Opaque;
     RenderTarget m_Target{};
@@ -149,7 +149,7 @@ struct ProgramUniformCache
     UniformHandle u_Model{};
 };
 
-class Renderer
+class ENGINE_API Renderer
 {
 public:
     Renderer(ShaderManager& shaderMgr,

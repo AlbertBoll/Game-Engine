@@ -34,7 +34,7 @@ struct RenderTargetDesc
 {
     u32 m_Width  = 1;
     u32 m_Height = 1;
-
+    TextureSampleCount m_Samples = TextureSampleCount::x1;
     std::vector<AttachmentSpec>   m_ColorAttachments;
 
     // May hold either Depth or DepthStencil attachment spec.
@@ -45,7 +45,7 @@ struct FramebufferHandle
 {
     u32 m_Id = 0;
     u32 m_Generation = 0;
-
+    
     explicit operator bool() const { return m_Id != 0; }
     friend bool operator==(const FramebufferHandle&, const FramebufferHandle&) = default;
 };
@@ -158,12 +158,19 @@ inline void ValidateAttachmentSpec(const AttachmentSpec& spec)
 inline void ValidateRenderTargetDesc(const RenderTargetDesc& desc)
 {
     CORE_ASSERT(desc.m_Width > 0 && desc.m_Height > 0, "RenderTargetDesc size must be > 0");
+    const bool isMSAA = (desc.m_Samples != TextureSampleCount::x1);
 
     for (const auto& color : desc.m_ColorAttachments)
     {
         CORE_ASSERT(color.m_Kind == AttachmentKind::Color,
                     "All color attachments must use AttachmentKind::Color");
         ValidateAttachmentSpec(color);
+
+        if (isMSAA)
+        {
+            CORE_ASSERT(color.m_MipPolicy == MipPolicy::OneLevel,
+                        "MSAA color attachment cannot allocate mip chain");
+        }
     }
 
     if (desc.m_DepthAttachment.has_value())
@@ -173,18 +180,44 @@ inline void ValidateRenderTargetDesc(const RenderTargetDesc& desc)
                     depth.m_Kind == AttachmentKind::DepthStencil,
                     "Depth attachment must be Depth or DepthStencil");
         ValidateAttachmentSpec(depth);
+        if (isMSAA)
+        {
+            CORE_ASSERT(depth.m_MipPolicy == MipPolicy::OneLevel,
+                        "MSAA depth attachment cannot allocate mip chain");
+        }
     }
 }
 
 inline TextureDesc ToTextureDesc(const RenderTargetDesc& rt, const AttachmentSpec& spec)
 {
     TextureDesc td{};
-    td.m_Type         = TextureType::Tex2D;
+    td.m_Type =(rt.m_Samples == TextureSampleCount::x1)
+        ? TextureType::Tex2D
+        : TextureType::Tex2DMS;
     td.m_Format       = spec.m_Format;
     td.m_Width        = rt.m_Width;
     td.m_Height       = rt.m_Height;
-    td.m_Sampler      = spec.m_Sampler;
-    td.m_MipLevels    = static_cast<u8>(ResolveMipLevels(spec, rt.m_Width, rt.m_Height));
-    td.b_GenerateMips = (spec.m_MipPolicy == MipPolicy::AutoGenerate);
+    td.m_Samples      = rt.m_Samples;
+    switch (spec.m_Kind)
+    {
+    case AttachmentKind::Color:
+        td.m_Usage = TextureUsage::ColorAttachment;
+        break;
+
+    case AttachmentKind::Depth:
+    case AttachmentKind::DepthStencil:
+        td.m_Usage = TextureUsage::DepthStencilAttachment;
+        break;
+    }
+
+    td.m_MipLevels =
+        (rt.m_Samples == TextureSampleCount::x1)
+        ? static_cast<u8>(ResolveMipLevels(spec, rt.m_Width, rt.m_Height))
+        : 1;
+
+    if (td.m_Type != TextureType::Tex2DMS)
+        td.m_Sampler = spec.m_Sampler;
+
     return td;
+  
 }

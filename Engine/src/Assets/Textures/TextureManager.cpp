@@ -44,12 +44,35 @@ static inline std::string NormalizePath(std::string_view p)
 // ---------------- validation ----------------
 static void ValidateTextureDesc(const TextureDesc& d)
 {
+
     CORE_ASSERT(d.m_Width > 0 && d.m_Height > 0, "TextureDesc width/height must be > 0");
-
-    if (d.m_Type == TextureType::Cube)
-        CORE_ASSERT(d.m_Width == d.m_Height, "Cube texture must be square");
-
+    CORE_ASSERT(d.m_MipLevels >= 1, "TextureDesc.m_MipLevels must be >= 1");
+    const u32 samples = static_cast<u32>(d.m_Samples);
+    CORE_ASSERT(samples >= 1, "Texture sample count must be >= 1");
     CORE_ASSERT(d.m_Sampler.m_MaxAniso >= 1.0f, "Sampler max anisotropy must be >= 1.0f");
+
+    switch(d.m_Type)
+    {
+    case TextureType::Cube:
+        CORE_ASSERT(d.m_Width == d.m_Height, "Cube texture must be square");
+        CORE_ASSERT(d.m_Samples == TextureSampleCount::x1, "Cube multisample texture is not supported");
+        CORE_ASSERT(d.m_Usage != TextureUsage::DepthStencilAttachment,
+                    "Cube depth attachment is not supported in this manager");
+        break;
+    case TextureType::Tex2DMS:
+        CORE_ASSERT(d.m_Samples != TextureSampleCount::x1,
+                    "Tex2DMS must have sample count > 1");
+        CORE_ASSERT(d.m_MipLevels == 1,
+                    "Multisample texture cannot have mip chain");
+        CORE_ASSERT(d.m_Usage == TextureUsage::ColorAttachment ||
+                    d.m_Usage == TextureUsage::DepthStencilAttachment,
+                    "Tex2DMS should be used only as attachment");
+        break;
+    case TextureType::Tex2D:
+        CORE_ASSERT(d.m_Samples == TextureSampleCount::x1, "Only Tex2DMS may use sample count > 1");
+        break;
+    }
+   
 }
 
 // ---------------- mip utils ----------------
@@ -67,8 +90,28 @@ static inline u32 CalcFullMipLevels(u32 w, u32 h)
 
 static inline u32 EffectiveMipLevels(const TextureDesc& d)
 {
-    u32 m = (d.m_MipLevels == 0) ? CalcFullMipLevels(d.m_Width, d.m_Height) : (u32)d.m_MipLevels;
-    return std::max<u32>(1, m);
+    // if (d.m_Type == TextureType::Tex2DMS || d.m_Usage != TextureUsage::Sampled)
+    //     return 1;
+
+    // if (d.m_MipLevels == 0) 
+    //     return CalcFullMipLevels(d.m_Width, d.m_Height);
+    return std::max<u32>(1, (u32)d.m_MipLevels);
+}
+
+static inline bool HasMipChain(const TextureDesc& d)
+{
+    return EffectiveMipLevels(d) > 1;
+}
+
+static inline bool ShouldAutoGenerateMips(const TextureDesc& d)
+{
+    if (d.m_Type == TextureType::Tex2DMS)
+        return false;
+
+    if (d.m_Usage != TextureUsage::Sampled)
+        return false;
+
+    return d.m_MipLevels > 1;
 }
 
 // ---------------- safe delete ----------------
@@ -338,12 +381,13 @@ static TextureHandle MakeChecker(TextureManager& tm, const SamplerDesc& sampler)
 
     TextureDesc d{};
     d.m_Type         = TextureType::Tex2D;
+    d.m_Usage        = TextureUsage::Sampled;
     d.m_Width        = 2;
     d.m_Height       = 2;
     d.m_Format       = TextureFormat::RGBA8;
     d.m_Sampler      = sampler;
     d.m_MipLevels    = 1;
-    d.b_GenerateMips = false;
+
 
     return tm.CreateFromPixels2D(
         d,
@@ -598,7 +642,7 @@ TextureHandle TextureManager::CreateFromPixels2D(const TextureDesc& inDesc,
                     gf.m_DataType,
                     pixels.data());
 
-    if (s->m_Desc.b_GenerateMips && mipLevels > 1)
+    if (ShouldAutoGenerateMips(s->m_Desc))
         glGenerateMipmap(GL_TEXTURE_2D);
 
     return h;
@@ -642,12 +686,12 @@ TextureHandle TextureManager::CreateFromFile2D(const TextureFile2DLoadDesc& d)
 
         TextureDesc desc{};
         desc.m_Type         = TextureType::Tex2D;
+        desc.m_Usage        = TextureUsage::Sampled;
         desc.m_Width        = (u32)w;
         desc.m_Height       = (u32)h;
         desc.m_Format       = ChooseLDRFormatByChannels(ch, d.m_ColorSpace);
         desc.m_Sampler      = d.m_Sampler;
-        desc.m_MipLevels    = 0;
-        desc.b_GenerateMips = true;
+        desc.m_MipLevels    = static_cast<u8>(CalcFullMipLevels((u32)w, (u32)h));;
 
         GLStateGuard state(*this);
 
@@ -668,7 +712,7 @@ TextureHandle TextureManager::CreateFromFile2D(const TextureFile2DLoadDesc& d)
 
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, gf.m_DataFmt, gf.m_DataType, data);
 
-        if (s->m_Desc.b_GenerateMips && mipLevels > 1)
+        if (ShouldAutoGenerateMips(s->m_Desc))
             glGenerateMipmap(GL_TEXTURE_2D);
 
         stbi_image_free(data);
@@ -689,12 +733,12 @@ TextureHandle TextureManager::CreateFromFile2D(const TextureFile2DLoadDesc& d)
 
         TextureDesc desc{};
         desc.m_Type         = TextureType::Tex2D;
+        desc.m_Usage        = TextureUsage::Sampled;
         desc.m_Width        = (u32)w;
         desc.m_Height       = (u32)h;
         desc.m_Format       = ChooseHDRFormatByChannels(ch);
         desc.m_Sampler      = d.m_Sampler;
-        desc.m_MipLevels    = 0;
-        desc.b_GenerateMips = true;
+        desc.m_MipLevels    = static_cast<u8>(CalcFullMipLevels((u32)w, (u32)h));;
 
         GLStateGuard state(*this);
 
@@ -715,7 +759,7 @@ TextureHandle TextureManager::CreateFromFile2D(const TextureFile2DLoadDesc& d)
 
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, gf.m_DataFmt, gf.m_DataType, data);
 
-        if (s->m_Desc.b_GenerateMips && mipLevels > 1)
+        if (ShouldAutoGenerateMips(s->m_Desc))
             glGenerateMipmap(GL_TEXTURE_2D);
 
         stbi_image_free(data);
@@ -761,9 +805,9 @@ TextureHandle TextureManager::CreateFromFileCube(const TextureCubeLoadDesc& d)
 
     TextureDesc desc{};
     desc.m_Type         = TextureType::Cube;
+    desc.m_Usage        = TextureUsage::Sampled;
     desc.m_Sampler      = d.m_Sampler;
-    desc.m_MipLevels    = 0;
-    desc.b_GenerateMips = true;
+    
 
     if (d.m_Range == ImageRange::LDR)
     {
@@ -778,6 +822,7 @@ TextureHandle TextureManager::CreateFromFileCube(const TextureCubeLoadDesc& d)
         desc.m_Width  = (u32)w;
         desc.m_Height = (u32)h;
         desc.m_Format = ChooseLDRFormatByChannels(ch, d.m_ColorSpace);
+        desc.m_MipLevels    = static_cast<u8>(CalcFullMipLevels((u32)w, (u32)h));
 
         GLStateGuard state(*this);
 
@@ -816,7 +861,7 @@ TextureHandle TextureManager::CreateFromFileCube(const TextureCubeLoadDesc& d)
             stbi_image_free(fi);
         }
 
-        if (s->m_Desc.b_GenerateMips && mipLevels > 1)
+        if (ShouldAutoGenerateMips(s->m_Desc))
             glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
         return d.b_UseCache ? StoreToCache(key, th) : th;
@@ -835,6 +880,7 @@ TextureHandle TextureManager::CreateFromFileCube(const TextureCubeLoadDesc& d)
         desc.m_Width  = (u32)w;
         desc.m_Height = (u32)h;
         desc.m_Format = ChooseHDRFormatByChannels(ch);
+        desc.m_MipLevels = static_cast<u8>(CalcFullMipLevels((u32)w, (u32)h));
 
         GLStateGuard state(*this);
 
@@ -873,7 +919,7 @@ TextureHandle TextureManager::CreateFromFileCube(const TextureCubeLoadDesc& d)
             stbi_image_free(fi);
         }
 
-        if (s->m_Desc.b_GenerateMips && mipLevels > 1)
+        if (ShouldAutoGenerateMips(s->m_Desc))
             glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
         return d.b_UseCache ? StoreToCache(key, th) : th;
@@ -885,6 +931,9 @@ void TextureManager::Bind(TextureHandle h, u32 unit) const
 {
     const Slot* s = GetSlot(h);
     if (!s) return;
+
+    CORE_ASSERT(s->m_Desc.m_Type != TextureType::Tex2DMS,
+                "Bind: multisample texture cannot be bound as regular sampled texture");
 
     EnsureUnitCacheInit();
     if (unit >= m_BoundTex.size()) return;
@@ -920,6 +969,11 @@ void TextureManager::GenerateMips(TextureHandle h)
 {
     Slot* s = GetSlot(h);
     if (!s) return;
+
+    CORE_ASSERT(s->m_Desc.m_Type != TextureType::Tex2DMS,
+                "GenerateMips: multisample texture cannot generate mipmaps");
+    CORE_ASSERT(s->m_Desc.m_Usage == TextureUsage::Sampled,
+                "GenerateMips: only sampled textures may generate mipmaps");
 
     const u32 mipLevels = (u32)s->m_Desc.m_MipLevels;
     if (mipLevels <= 1) return;
@@ -995,14 +1049,16 @@ TextureHandle TextureManager::CreateEmptyInternal(const TextureDesc& inDesc, std
     ValidateTextureDesc(inDesc);
 
     TextureDesc desc = inDesc;
+
+
     const u32 mipLevels = EffectiveMipLevels(desc);
-    desc.m_MipLevels = (u8)mipLevels;
+    // desc.m_MipLevels = (u8)mipLevels;
 
-    const GLenum target = (desc.m_Type == TextureType::Cube)
-        ? GL_TEXTURE_CUBE_MAP
-        : GL_TEXTURE_2D;
+    // const GLenum target = (desc.m_Type == TextureType::Cube)
+    //     ? GL_TEXTURE_CUBE_MAP
+    //     : GL_TEXTURE_2D;
 
-    const GLFormat gf = ToGL(desc.m_Format);
+    // const GLFormat gf = ToGL(desc.m_Format);
 
     TextureHandle h = AllocateSlot();
     Slot& slot = m_Slots[h.m_Id - 1];
@@ -1011,34 +1067,72 @@ TextureHandle TextureManager::CreateEmptyInternal(const TextureDesc& inDesc, std
     glGenTextures(1, &tex);
     if (tex == 0)
     {
+        CORE_ERROR("glGenTextures failed");
         slot.m_Generation++;
         m_FreeList.push_back(h.m_Id - 1);
         return {};
     }
 
     slot.m_GLTex     = (u32)tex;
-    slot.m_GLSampler = GetOrCreateSampler(desc.m_Sampler);
+    // slot.m_GLSampler = GetOrCreateSampler(desc.m_Sampler);
     slot.m_Desc      = desc;
     slot.m_Generation = h.m_Generation;
     slot.b_Alive     = true;
     slot.m_RefCount  = 1;
     slot.b_HasKey    = false;
 
+    slot.m_GLSampler = (desc.m_Type == TextureType::Tex2DMS)
+        ? 0
+        : GetOrCreateSampler(desc.m_Sampler);
+
     SetDebugLabel(GL_TEXTURE, slot.m_GLTex, debugName);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(target, (GLuint)slot.m_GLTex);
-
-    // OpenGL 4.3 core path: always immutable storage
-    glTexStorage2D(target,
-                   (GLsizei)mipLevels,
-                   gf.m_InternalFmt,
-                   (GLsizei)desc.m_Width,
-                   (GLsizei)desc.m_Height);
-
-    SetMipRange(target, mipLevels);
+    const GLFormat gf = ToGL(desc.m_Format);
+    if (desc.m_Type == TextureType::Tex2D)
+    {
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexStorage2D(GL_TEXTURE_2D,
+                       static_cast<GLsizei>(mipLevels),
+                       gf.m_InternalFmt,
+                       static_cast<GLsizei>(desc.m_Width),
+                       static_cast<GLsizei>(desc.m_Height));
+        SetMipRange(GL_TEXTURE_2D, mipLevels);
+    }
+    else if (desc.m_Type == TextureType::Cube)
+    {
+        glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
+        glTexStorage2D(GL_TEXTURE_CUBE_MAP,
+                       static_cast<GLsizei>(mipLevels),
+                       gf.m_InternalFmt,
+                       static_cast<GLsizei>(desc.m_Width),
+                       static_cast<GLsizei>(desc.m_Height));
+        SetMipRange(GL_TEXTURE_CUBE_MAP, mipLevels);
+    }
+    else // Tex2DMS
+    {
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex);
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
+                                static_cast<GLsizei>(static_cast<u32>(desc.m_Samples)),
+                                gf.m_InternalFmt,
+                                static_cast<GLsizei>(desc.m_Width),
+                                static_cast<GLsizei>(desc.m_Height),
+                                GL_TRUE);
+    }
 
     return h;
+
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(target, (GLuint)slot.m_GLTex);
+
+    // // OpenGL 4.3 core path: always immutable storage
+    // glTexStorage2D(target,
+    //                (GLsizei)mipLevels,
+    //                gf.m_InternalFmt,
+    //                (GLsizei)desc.m_Width,
+    //                (GLsizei)desc.m_Height);
+
+    // SetMipRange(target, mipLevels);
+
+    // return h;
 }
 
 TextureHandle TextureManager::LoadData2D(std::string_view file, const TextureLoadOptions &opt)
@@ -1161,11 +1255,11 @@ TextureHandle TextureManager::CreateSolidRGBA8(u8 r, u8 g, u8 b, u8 a,
 
     TextureDesc desc{};
     desc.m_Type         = TextureType::Tex2D;
+    desc.m_Usage        = TextureUsage::Sampled;
     desc.m_Format       = TextureFormat::RGBA8;
     desc.m_Width        = 1;
     desc.m_Height       = 1;
     desc.m_MipLevels    = 1;
-    desc.b_GenerateMips = false;
     desc.m_Sampler      = SamplerDesc{};
 
     return CreateFromPixels2D(
