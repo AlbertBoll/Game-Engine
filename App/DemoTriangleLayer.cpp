@@ -136,7 +136,7 @@ void DemoTriangleLayer::OnRender()
 
     // MSAA framebuffer cannot be presented directly.
     // Resolve color attachment 0 into default framebuffer.
-    m_FramebufferMgr.ResolveColorToBackBuffer(m_SceneMsaaFB, 0);
+    m_Renderer.ResolveColorToBackBuffer(m_SceneMsaaFB, 0);
 
     m_Renderer.EndFrame();
 }

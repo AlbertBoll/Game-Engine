@@ -206,6 +206,14 @@ public:
     // --------------------------------------------------------
     void InvalidateBindCache();
 
+    void ResolveColor(FramebufferHandle srcMsaa,
+                      FramebufferHandle dstSingleSample,
+                      u32 srcColorIndex = 0,
+                      u32 dstColorIndex = 0);
+
+    void ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
+                                  u32 srcColorIndex = 0);
+
 private:
     void SortOpaqueItems();
     void SortTransparentItems();

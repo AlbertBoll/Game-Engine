@@ -139,6 +139,45 @@ void Renderer::BeginPass(const RenderPassDesc& desc)
     m_MaterialMgr.InvalidateBindCache();
 }
 
+void Renderer::ResolveColor(FramebufferHandle srcMsaa,
+                            FramebufferHandle dstSingleSample,
+                            u32 srcColorIndex,
+                            u32 dstColorIndex)
+{
+    CORE_ASSERT(!m_CurrentPass.has_value(),
+                "ResolveColor must be called outside an active render pass");
+
+    m_FramebufferMgr.ResolveColor(
+        srcMsaa,
+        dstSingleSample,
+        srcColorIndex,
+        dstColorIndex
+    );
+
+    // Resolve mutates READ/DRAW framebuffer bindings.
+    // Renderer cache is no longer trustworthy.
+    m_BoundFBO = 0xFFFFFFFFu;
+    m_BoundVAO = 0;
+    m_BoundPipeline = ~0u;
+    m_MaterialMgr.InvalidateBindCache();
+}
+
+void Renderer::ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
+                                        u32 srcColorIndex)
+{
+    CORE_ASSERT(!m_CurrentPass.has_value(),
+                "ResolveColorToBackBuffer must be called outside an active render pass");
+
+    m_FramebufferMgr.ResolveColorToBackBuffer(srcMsaa, srcColorIndex);
+
+    // Resolve ends with GL_DRAW_FRAMEBUFFER/GL_READ_FRAMEBUFFER changed.
+    // Force next pass to bind its target again.
+    m_BoundFBO = 0xFFFFFFFFu;
+    m_BoundVAO = 0;
+    m_BoundPipeline = ~0u;
+    m_MaterialMgr.InvalidateBindCache();
+}
+
 void Renderer::EndPass()
 {
     CORE_ASSERT(m_CurrentPass.has_value(), "EndPass: no active pass");
