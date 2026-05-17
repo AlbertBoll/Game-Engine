@@ -29,8 +29,10 @@ public:
 
     void OnRender() override;
 
-                         
+private:
+    void RecreateSceneFramebuffer(u32 width, u32 height);
 
+                         
 private:
     ShaderManager      m_ShaderMgr;
     TextureManager     m_TextureMgr;
@@ -42,6 +44,10 @@ private:
     ShaderHandle   m_TriangleShader{};
     MeshHandle     m_TriangleMesh{};
     MaterialHandle m_TriangleMat{};
-
+    
+    FramebufferHandle m_SceneMsaaFB{};
     RenderPassDesc m_PassDesc{};
+
+    u32 m_FramebufferWidth  = 0;
+    u32 m_FramebufferHeight = 0;
 };
