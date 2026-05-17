@@ -29,6 +29,14 @@ public:
     TextureHandle GetColorAttachment(FramebufferHandle h, size_t index) const;
     std::optional<TextureHandle> GetDepthAttachment(FramebufferHandle h) const;
 
+    void ResolveColor(FramebufferHandle srcMsaa,
+                      FramebufferHandle dstSingleSample,
+                      u32 srcColorIndex,
+                      u32 dstColorIndex);
+
+    void ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
+                                  u32 srcColorIndex);
+
     void Resize(FramebufferHandle h, u32 width, u32 height);
 
 private:

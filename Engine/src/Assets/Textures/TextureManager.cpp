@@ -165,6 +165,7 @@ struct GLStateGuard
 
     GLint m_PrevActiveTexEnum = 0;
     GLint m_PrevBind2D        = 0;
+    GLint m_PrevBind2DMS      = 0;
     GLint m_PrevBindCube      = 0;
     GLint m_PrevSampler0      = 0;
 
@@ -177,6 +178,7 @@ struct GLStateGuard
 
         glActiveTexture(GL_TEXTURE0);
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &m_PrevBind2D);
+        glGetIntegerv(GL_TEXTURE_BINDING_2D_MULTISAMPLE, &m_PrevBind2DMS);
         glGetIntegerv(GL_TEXTURE_BINDING_CUBE_MAP, &m_PrevBindCube);
         glGetIntegeri_v(GL_SAMPLER_BINDING, 0, &m_PrevSampler0);
     }
@@ -185,6 +187,7 @@ struct GLStateGuard
     {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, (GLuint)m_PrevBind2D);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, (GLuint)m_PrevBind2DMS);
         glBindTexture(GL_TEXTURE_CUBE_MAP, (GLuint)m_PrevBindCube);
         glBindSampler(0, (GLuint)m_PrevSampler0);
 
@@ -972,8 +975,14 @@ void TextureManager::GenerateMips(TextureHandle h)
 
     CORE_ASSERT(s->m_Desc.m_Type != TextureType::Tex2DMS,
                 "GenerateMips: multisample texture cannot generate mipmaps");
-    CORE_ASSERT(s->m_Desc.m_Usage == TextureUsage::Sampled,
-                "GenerateMips: only sampled textures may generate mipmaps");
+
+    CORE_ASSERT(s->m_Desc.m_Usage == TextureUsage::Sampled ||
+                s->m_Desc.m_Usage == TextureUsage::ColorAttachment,
+                "GenerateMips: only sampled or color attachment textures may generate mipmaps");
+
+    CORE_ASSERT(s->m_Desc.m_Format != TextureFormat::Depth24Stencil8 &&
+                s->m_Desc.m_Format != TextureFormat::Depth32F,
+                "GenerateMips: depth/depth-stencil textures are not supported here");
 
     const u32 mipLevels = (u32)s->m_Desc.m_MipLevels;
     if (mipLevels <= 1) return;

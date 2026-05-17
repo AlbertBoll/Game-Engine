@@ -169,12 +169,21 @@ void FramebufferManager::BuildSlot(Slot& s, const RenderTargetDesc& desc, std::s
         CORE_ASSERT(tex, "Failed to create color attachment texture");
 
         const TextureDesc& createdDesc = m_TextureMgr.GetDesc(tex);
-        CORE_ASSERT(createdDesc.m_Type == TextureType::Tex2D, "Framebuffer currently requires 2D attachments");
+
+        CORE_ASSERT(createdDesc.m_Type == TextureType::Tex2D ||
+                    createdDesc.m_Type == TextureType::Tex2DMS,
+                    "Framebuffer requires Tex2D or Tex2DMS attachments");
+
+        const GLenum texTarget =
+            (createdDesc.m_Type == TextureType::Tex2DMS)
+            ? GL_TEXTURE_2D_MULTISAMPLE
+            : GL_TEXTURE_2D;
 
         const u32 glTex = m_TextureMgr.GetNativeTexture(tex);
+
         glFramebufferTexture2D(GL_FRAMEBUFFER,
                                ToGLAttachment(AttachmentKind::Color, i),
-                               GL_TEXTURE_2D,
+                               texTarget,
                                static_cast<GLuint>(glTex),
                                0);
 
@@ -196,12 +205,21 @@ void FramebufferManager::BuildSlot(Slot& s, const RenderTargetDesc& desc, std::s
         CORE_ASSERT(tex, "Failed to create depth attachment texture");
 
         const TextureDesc& createdDesc = m_TextureMgr.GetDesc(tex);
-        CORE_ASSERT(createdDesc.m_Type == TextureType::Tex2D, "Framebuffer currently requires 2D attachments");
+
+        CORE_ASSERT(createdDesc.m_Type == TextureType::Tex2D ||
+                    createdDesc.m_Type == TextureType::Tex2DMS,
+                    "Framebuffer requires Tex2D or Tex2DMS attachments");
+
+        const GLenum texTarget =
+            (createdDesc.m_Type == TextureType::Tex2DMS)
+            ? GL_TEXTURE_2D_MULTISAMPLE
+            : GL_TEXTURE_2D;
 
         const u32 glTex = m_TextureMgr.GetNativeTexture(tex);
+
         glFramebufferTexture2D(GL_FRAMEBUFFER,
                                ToGLAttachment(spec.m_Kind),
-                               GL_TEXTURE_2D,
+                               texTarget,
                                static_cast<GLuint>(glTex),
                                0);
 
@@ -235,6 +253,70 @@ FramebufferHandle FramebufferManager::CreateFromDesc(const RenderTargetDesc& des
     s.b_Alive = true;
     s.m_Generation = h.m_Generation;
     return h;
+}
+
+void FramebufferManager::ResolveColor(FramebufferHandle srcMsaa,
+                                      FramebufferHandle dstSingleSample,
+                                      u32 srcColorIndex,
+                                      u32 dstColorIndex)
+{
+    const Slot* src = GetSlot(srcMsaa);
+    const Slot* dst = GetSlot(dstSingleSample);
+
+    CORE_ASSERT(src && dst, "ResolveColor: invalid framebuffer handle");
+    CORE_ASSERT(src->m_Desc.m_Samples != TextureSampleCount::x1,
+                "ResolveColor: source must be multisampled");
+    CORE_ASSERT(dst->m_Desc.m_Samples == TextureSampleCount::x1,
+                "ResolveColor: destination must be single-sample");
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(src->m_GLFBO));
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLuint>(dst->m_GLFBO));
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0 + srcColorIndex);
+    glDrawBuffer(GL_COLOR_ATTACHMENT0 + dstColorIndex);
+
+    glBlitFramebuffer(
+        0, 0,
+        static_cast<GLint>(src->m_Desc.m_Width),
+        static_cast<GLint>(src->m_Desc.m_Height),
+        0, 0,
+        static_cast<GLint>(dst->m_Desc.m_Width),
+        static_cast<GLint>(dst->m_Desc.m_Height),
+        GL_COLOR_BUFFER_BIT,
+        GL_NEAREST
+    );
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
+
+void FramebufferManager::ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
+                                                  u32 srcColorIndex)
+{
+    const Slot* src = GetSlot(srcMsaa);
+
+    CORE_ASSERT(src, "ResolveColorToBackBuffer: invalid framebuffer handle");
+    CORE_ASSERT(src->m_Desc.m_Samples != TextureSampleCount::x1,
+                "ResolveColorToBackBuffer: source must be multisampled");
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(src->m_GLFBO));
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0 + srcColorIndex);
+
+    glBlitFramebuffer(
+        0, 0,
+        static_cast<GLint>(src->m_Desc.m_Width),
+        static_cast<GLint>(src->m_Desc.m_Height),
+        0, 0,
+        static_cast<GLint>(src->m_Desc.m_Width),
+        static_cast<GLint>(src->m_Desc.m_Height),
+        GL_COLOR_BUFFER_BIT,
+        GL_NEAREST
+    );
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
 void FramebufferManager::Destroy(FramebufferHandle h)
