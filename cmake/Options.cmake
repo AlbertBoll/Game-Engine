@@ -7,7 +7,7 @@ set_property(CACHE CORE_WINDOW_BACKEND PROPERTY STRINGS GLFW SDL3)
 
 # Portable default for glad2 (macOS tops near 4.1)
 if(APPLE)
-  set(GLAD_API "gl:core=3.3" CACHE STRING "glad2 API (e.g., gl:core=3.3|4.6)")
+  set(GLAD_API "gl:core=4.3" CACHE STRING "glad2 API (e.g., gl:core=3.3|4.6)")
 else()
   set(GLAD_API "gl:core=4.6" CACHE STRING "glad2 API (e.g., gl:core=3.3|4.6)")
 endif()
