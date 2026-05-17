@@ -63,17 +63,24 @@ void SDL3Window::Initialize(const WindowProperties &winProp)
     // Create the SDL window
     SDL_DisplayID display = SDL_GetPrimaryDisplay();
     const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(display);
-    if (!mode) 
+    int windowWidth  = static_cast<int>(m_WindowProperties.m_Width);
+    int windowHeight = static_cast<int>(m_WindowProperties.m_Height);
+
+    if (mode) 
     {
-        CORE_ERROR("SDL_GetCurrentDisplayMode failed: {}", SDL_GetError());
+        windowWidth  = mode->w;
+        windowHeight = mode->h;
+        CORE_INFO("Current mode: {}x{} @ {}Hz", mode->w, mode->h, mode->refresh_rate);
     } 
     else 
     {
-        CORE_INFO("Current mode: {}x{} @ {}Hz", mode->w, mode->h, mode->refresh_rate);
+        CORE_WARN("SDL_GetCurrentDisplayMode failed, using requested window size: {}x{}",
+                  windowWidth,
+                  windowHeight);
     }
 
     
-    SetWindow(mode->w, mode->h, flag);
+    SetWindow(windowWidth, windowHeight, flag);
    
     CORE_ASSERT(m_Window, "SDL Window couldn't be created!");    
 

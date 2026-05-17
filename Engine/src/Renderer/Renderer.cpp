@@ -119,6 +119,7 @@ void Renderer::BeginPass(const RenderPassDesc& desc)
 
     if (hasDepth && desc.m_DepthLoadOp == LoadOp::Clear)
     {
+        glDepthMask(GL_TRUE);
         glClearDepth(desc.m_ClearDepth);
         clearMask |= GL_DEPTH_BUFFER_BIT;
 
@@ -150,14 +151,17 @@ void Renderer::EndPass()
         const FramebufferHandle fb = pass.m_Target.m_Framebuffer;
         const RenderTargetDesc& rt = m_FramebufferMgr.GetDesc(fb);
 
-        for (size_t i = 0; i < rt.m_ColorAttachments.size(); ++i)
+        if (rt.m_Samples == TextureSampleCount::x1)
         {
-            const AttachmentSpec& spec = rt.m_ColorAttachments[i];
-            if (spec.m_MipPolicy == MipPolicy::AutoGenerate)
+            for (size_t i = 0; i < rt.m_ColorAttachments.size(); ++i)
             {
-                TextureHandle tex = m_FramebufferMgr.GetColorAttachment(fb, i);
-                if (tex)
-                    m_TextureMgr.GenerateMips(tex);
+                const AttachmentSpec& spec = rt.m_ColorAttachments[i];
+                if (spec.m_MipPolicy == MipPolicy::AutoGenerate)
+                {
+                    TextureHandle tex = m_FramebufferMgr.GetColorAttachment(fb, i);
+                    if (tex)
+                        m_TextureMgr.GenerateMips(tex);
+                }
             }
         }
     }
