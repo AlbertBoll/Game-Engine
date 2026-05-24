@@ -119,7 +119,10 @@ void Renderer::BeginPass(const RenderPassDesc& desc)
 
     if (hasDepth && desc.m_DepthLoadOp == LoadOp::Clear)
     {
+        // Depth clear is affected by glDepthMask.
+        // Previous transparent/additive passes may have disabled depth writes.
         glDepthMask(GL_TRUE);
+
         glClearDepth(desc.m_ClearDepth);
         clearMask |= GL_DEPTH_BUFFER_BIT;
 
@@ -163,6 +166,29 @@ void Renderer::ResolveColor(FramebufferHandle srcMsaa,
 }
 
 void Renderer::ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
+                                        u32 srcColorIndex,
+                                        u32 dstWidth,
+                                        u32 dstHeight)
+{
+    CORE_ASSERT(!m_CurrentPass.has_value(),
+                "ResolveColorToBackBuffer must be called outside an active render pass");
+
+    m_FramebufferMgr.ResolveColorToBackBuffer(
+        srcMsaa,
+        srcColorIndex,
+        dstWidth,
+        dstHeight
+    );
+
+    // Resolve mutates READ/DRAW framebuffer bindings.
+    // Renderer cache is no longer trustworthy.
+    m_BoundFBO = 0xFFFFFFFFu;
+    m_BoundVAO = 0;
+    m_BoundPipeline = ~0u;
+    m_MaterialMgr.InvalidateBindCache();
+}
+
+void Renderer::ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
                                         u32 srcColorIndex)
 {
     CORE_ASSERT(!m_CurrentPass.has_value(),
@@ -190,6 +216,8 @@ void Renderer::EndPass()
         const FramebufferHandle fb = pass.m_Target.m_Framebuffer;
         const RenderTargetDesc& rt = m_FramebufferMgr.GetDesc(fb);
 
+        // MSAA textures cannot generate mipmaps.
+        // AutoGenerate is only valid for single-sample render-target color attachments.
         if (rt.m_Samples == TextureSampleCount::x1)
         {
             for (size_t i = 0; i < rt.m_ColorAttachments.size(); ++i)

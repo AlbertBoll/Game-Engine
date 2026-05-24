@@ -181,6 +181,21 @@ void SDL3Window::PumpEvents()
             }
             break;
         }
+
+        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+        {
+            if (m_EventCallback)
+            {
+                WindowResizeEvent event(
+                    m_WindowProperties.m_Width,
+                    m_WindowProperties.m_Height
+                );
+                m_EventCallback(event);
+            }
+
+            break;
+        }
+
         default:
             break;
         }
@@ -348,4 +363,26 @@ void SDL3Window::SetWindow(int DisplayWidth, int DisplayHeight, uint32_t flag)
 void SDL3Window::SwapBuffers()
 {
     SDL_GL_SwapWindow(m_Window);
+}
+
+WindowDrawableSize SDL3Window::GetDrawableSize() const
+{
+    if (!m_Window)
+        return {};
+
+    int pixelW = 0;
+    int pixelH = 0;
+
+    if (!SDL_GetWindowSizeInPixels(m_Window, &pixelW, &pixelH))
+    {
+        return WindowDrawableSize{
+            .m_Width = m_WindowProperties.m_Width,
+            .m_Height = m_WindowProperties.m_Height
+        };
+    }
+
+    return WindowDrawableSize{
+        .m_Width = static_cast<u32>(pixelW > 0 ? pixelW : 0),
+        .m_Height = static_cast<u32>(pixelH > 0 ? pixelH : 0)
+    };
 }

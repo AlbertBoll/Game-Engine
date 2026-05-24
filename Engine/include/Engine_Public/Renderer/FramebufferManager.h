@@ -37,6 +37,11 @@ public:
     void ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
                                   u32 srcColorIndex);
 
+    void ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
+                                    u32 srcColorIndex,
+                                    u32 dstWidth,
+                                    u32 dstHeight);
+
     void Resize(FramebufferHandle h, u32 width, u32 height);
 
 private:
@@ -60,7 +65,7 @@ private:
     const Slot* GetSlot(FramebufferHandle h) const;
 
     void DestroySlotResources(Slot& s);
-    void BuildSlot(Slot& s, const RenderTargetDesc& desc, std::string_view debugName);
+    bool BuildSlot(Slot& s, const RenderTargetDesc& desc, std::string_view debugName);
 
 private:
     TextureManager& m_TextureMgr;

@@ -47,7 +47,7 @@ private:
     
     FramebufferHandle m_SceneMsaaFB{};
     RenderPassDesc m_PassDesc{};
-
+    
     u32 m_FramebufferWidth  = 0;
     u32 m_FramebufferHeight = 0;
 };

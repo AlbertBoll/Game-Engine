@@ -16,6 +16,7 @@ public:
     uint32_t GetWindowFlag(const WindowProperties& winProp);
     void SetWindow(int DisplayWidth, int DisplayHeight, uint32_t flag);
     void SwapBuffers() override;
+    WindowDrawableSize GetDrawableSize() const override;
   
 private:
     virtual void PumpEvents() override;

@@ -134,13 +134,17 @@ void FramebufferManager::DestroySlotResources(Slot& s)
     GLDeleteFramebuffer(s.m_GLFBO);
 }
 
-void FramebufferManager::BuildSlot(Slot& s, const RenderTargetDesc& desc, std::string_view debugName)
+bool FramebufferManager::BuildSlot(Slot& s, const RenderTargetDesc& desc, std::string_view debugName)
 {
     ValidateRenderTargetDesc(desc);
 
+    GLuint oldFbo = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&oldFbo));
+
     GLuint fbo = 0;
     glGenFramebuffers(1, &fbo);
-    CORE_ASSERT(fbo != 0, "glGenFramebuffers failed");
+    if (fbo == 0)
+        return false;
 
     s.m_GLFBO = static_cast<u32>(fbo);
     s.m_Desc = desc;
@@ -174,18 +178,17 @@ void FramebufferManager::BuildSlot(Slot& s, const RenderTargetDesc& desc, std::s
                     createdDesc.m_Type == TextureType::Tex2DMS,
                     "Framebuffer requires Tex2D or Tex2DMS attachments");
 
-        const GLenum texTarget =
-            (createdDesc.m_Type == TextureType::Tex2DMS)
-            ? GL_TEXTURE_2D_MULTISAMPLE
-            : GL_TEXTURE_2D;
+        // const GLenum texTarget =
+        //     (createdDesc.m_Type == TextureType::Tex2DMS)
+        //     ? GL_TEXTURE_2D_MULTISAMPLE
+        //     : GL_TEXTURE_2D;
 
         const u32 glTex = m_TextureMgr.GetNativeTexture(tex);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER,
-                               ToGLAttachment(AttachmentKind::Color, i),
-                               texTarget,
-                               static_cast<GLuint>(glTex),
-                               0);
+        glFramebufferTexture(GL_FRAMEBUFFER,
+                            ToGLAttachment(AttachmentKind::Color, i),
+                            static_cast<GLuint>(glTex),
+                            0);
 
         s.m_ColorAttachments.push_back(tex);
         drawBuffers.push_back(GL_COLOR_ATTACHMENT0 + i);
@@ -210,18 +213,17 @@ void FramebufferManager::BuildSlot(Slot& s, const RenderTargetDesc& desc, std::s
                     createdDesc.m_Type == TextureType::Tex2DMS,
                     "Framebuffer requires Tex2D or Tex2DMS attachments");
 
-        const GLenum texTarget =
-            (createdDesc.m_Type == TextureType::Tex2DMS)
-            ? GL_TEXTURE_2D_MULTISAMPLE
-            : GL_TEXTURE_2D;
+        // const GLenum texTarget =
+        //     (createdDesc.m_Type == TextureType::Tex2DMS)
+        //     ? GL_TEXTURE_2D_MULTISAMPLE
+        //     : GL_TEXTURE_2D;
 
         const u32 glTex = m_TextureMgr.GetNativeTexture(tex);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER,
-                               ToGLAttachment(spec.m_Kind),
-                               texTarget,
-                               static_cast<GLuint>(glTex),
-                               0);
+        glFramebufferTexture(GL_FRAMEBUFFER,
+                            ToGLAttachment(spec.m_Kind),
+                            static_cast<GLuint>(glTex),
+                            0);
 
         s.m_DepthAttachment = tex;
     }
@@ -237,9 +239,15 @@ void FramebufferManager::BuildSlot(Slot& s, const RenderTargetDesc& desc, std::s
     }
 
     const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete");
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, oldFbo);
+        DestroySlotResources(s);
+        return false;
+    }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, oldFbo);
+    return true;
 }
 
 FramebufferHandle FramebufferManager::CreateFromDesc(const RenderTargetDesc& desc,
@@ -248,7 +256,13 @@ FramebufferHandle FramebufferManager::CreateFromDesc(const RenderTargetDesc& des
     FramebufferHandle h = AllocateSlot();
     Slot& s = m_Slots[h.m_Id - 1];
 
-    BuildSlot(s, desc, debugName);
+    if(!BuildSlot(s, desc, debugName))
+    {
+        s = Slot{};
+        ++s.m_Generation;
+        m_FreeList.push_back(h.m_Id - 1);
+        return {};
+    }
 
     s.b_Alive = true;
     s.m_Generation = h.m_Generation;
@@ -317,6 +331,38 @@ void FramebufferManager::ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
+
+void FramebufferManager::ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
+                              u32 srcColorIndex,
+                              u32 dstWidth,
+                              u32 dstHeight)
+{
+    const Slot* src = GetSlot(srcMsaa);
+
+    CORE_ASSERT(src, "ResolveColorToBackBuffer: invalid framebuffer handle");
+    CORE_ASSERT(src->m_Desc.m_Samples != TextureSampleCount::x1,
+                "ResolveColorToBackBuffer: source must be multisampled");
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(src->m_GLFBO));
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0 + srcColorIndex);
+
+    glBlitFramebuffer(
+        0, 0,
+        static_cast<GLint>(src->m_Desc.m_Width),
+        static_cast<GLint>(src->m_Desc.m_Height),
+        0, 0,
+        static_cast<GLint>(dstWidth),
+        static_cast<GLint>(dstHeight),
+        GL_COLOR_BUFFER_BIT,
+        GL_NEAREST
+    );
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
 }
 
 void FramebufferManager::Destroy(FramebufferHandle h)

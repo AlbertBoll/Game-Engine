@@ -46,6 +46,14 @@ struct WindowProperties
     }
 };
 
+
+struct WindowDrawableSize
+{
+    u32 m_Width = 0;
+    u32 m_Height = 0;
+};
+
+
 class Window
 {
     
@@ -67,6 +75,7 @@ public:
     bool IsVSync()const {return m_WindowProperties.m_IsVsync;}
     virtual void SwapBuffers() = 0;
     void PollEvents(){ PumpEvents(); }
+    virtual WindowDrawableSize GetDrawableSize() const = 0;
 
 protected:
     virtual void PumpEvents() = 0;

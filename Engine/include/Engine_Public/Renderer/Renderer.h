@@ -214,6 +214,11 @@ public:
     void ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
                                   u32 srcColorIndex = 0);
 
+    void ResolveColorToBackBuffer(FramebufferHandle srcMsaa,
+                                  u32 srcColorIndex,
+                                  u32 dstWidth,
+                                  u32 dstHeight);
+
 private:
     void SortOpaqueItems();
     void SortTransparentItems();

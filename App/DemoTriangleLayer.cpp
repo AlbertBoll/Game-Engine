@@ -22,9 +22,10 @@ void DemoTriangleLayer::OnAttach()
         );
 
     auto& window = Application::Get().GetWindow();
-    const auto& props = window.GetWindowProperties();
+    //const auto& props = window.GetWindowProperties();
+    const WindowDrawableSize drawable = window.GetDrawableSize();
 
-    RecreateSceneFramebuffer(props.m_Width, props.m_Height);
+    RecreateSceneFramebuffer(drawable.m_Width, drawable.m_Height);
     // m_PassDesc.m_Pass = RenderPass::Opaque;
     // m_PassDesc.m_Target = RenderTarget{
     //     .m_Kind = RenderTargetKind::BackBuffer
@@ -91,10 +92,11 @@ void DemoTriangleLayer::RecreateSceneFramebuffer(u32 width, u32 height)
 void DemoTriangleLayer::OnRender()
 {
     auto& window = Application::Get().GetWindow();
-    const auto& props = window.GetWindowProperties();
+    //const auto& props = window.GetWindowProperties();
+    const WindowDrawableSize drawable = window.GetDrawableSize();
 
-    const u32 width  = props.m_Width;
-    const u32 height = props.m_Height;
+    const u32 width  = drawable.m_Width;
+    const u32 height = drawable.m_Height;
 
     if (width == 0 || height == 0)
         return;
@@ -134,9 +136,10 @@ void DemoTriangleLayer::OnRender()
 
     m_Renderer.EndPass();
 
+    //const WindowDrawableSize drawable = window.GetDrawableSize();
     // MSAA framebuffer cannot be presented directly.
     // Resolve color attachment 0 into default framebuffer.
-    m_Renderer.ResolveColorToBackBuffer(m_SceneMsaaFB, 0);
+    m_Renderer.ResolveColorToBackBuffer(m_SceneMsaaFB, 0, width, height);
 
     m_Renderer.EndFrame();
 }
