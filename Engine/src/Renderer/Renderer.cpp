@@ -6,6 +6,16 @@
 #include "Renderer/FramebufferManager.h"
 #include <glad/gl.h>
 
+static GLenum ToGLIndexType(IndexType type)
+{
+    switch (type)
+    {
+        case IndexType::U16: return GL_UNSIGNED_SHORT;
+        case IndexType::U32: return GL_UNSIGNED_INT;
+    }
+    return GL_UNSIGNED_INT;
+}
+
 Renderer::Renderer(ShaderManager& shaderMgr,
                    TextureManager& textureMgr,
                    MeshManager& meshMgr,
@@ -521,7 +531,7 @@ void Renderer::FlushOpaque(const Mat4& viewProj)
         BindMeshIfNeeded(item.m_Mesh);
 
         const MeshGL& mesh = m_MeshMgr.GetGL(item.m_Mesh);
-        glDrawElements(GL_TRIANGLES, mesh.m_IndexCount, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, mesh.m_IndexCount, ToGLIndexType(mesh.m_IndexBuffer.GetIndexType()), nullptr);
     }
 
     m_OpaqueItems.clear();
@@ -563,7 +573,7 @@ void Renderer::FlushTransparent(const Mat4& viewProj)
         BindMeshIfNeeded(item.m_Mesh);
 
         const MeshGL& mesh = m_MeshMgr.GetGL(item.m_Mesh);
-        glDrawElements(GL_TRIANGLES, mesh.m_IndexCount, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, mesh.m_IndexCount, ToGLIndexType(mesh.m_IndexBuffer.GetIndexType()), nullptr);
     }
 
     m_TransparentItems.clear();
